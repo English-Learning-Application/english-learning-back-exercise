@@ -1,0 +1,73 @@
+package com.security.app.services
+
+import com.security.app.entities.MatchingLearning
+import com.security.app.model.LearningContentType
+import com.security.app.repositories.MatchingLearningRepository
+import com.security.app.request.MatchingLearningInfo
+import com.security.app.utils.toUUID
+import jakarta.transaction.Transactional
+import org.springframework.stereotype.Service
+
+@Service
+class MatchingLearningService(
+    private val matchingLearningRepository: MatchingLearningRepository,
+    private val learningContentService: LearningContentService,
+) {
+    @Transactional
+    fun updateMatchingLearning(
+        tokenString: String,
+        correctMatchingInfoList : List<MatchingLearningInfo>,
+        incorrectMatchingInfoList: List<MatchingLearningInfo>
+    ) : List<MatchingLearning>? {
+        val extractedLearningContentIds = (correctMatchingInfoList + incorrectMatchingInfoList).map { it.learningContentId }.distinct()
+        val learningContentResponse =
+            learningContentService.getLearningContentByIds(extractedLearningContentIds, tokenString)
+
+        if(extractedLearningContentIds.size != learningContentResponse?.size) {
+            return null
+        }
+
+        fun createMatchingLearningEntities(
+            matchingLearningInfoList: List<MatchingLearningInfo>,
+            numberOfCorrect: Int? = null,
+            numberOfIncorrect: Int? = null
+        ): List<MatchingLearning> {
+            return matchingLearningInfoList.map { matchingInfo ->
+                MatchingLearning().apply{
+                    learningContentId = matchingInfo.learningContentId.toUUID()
+                    itemId = matchingInfo.itemId.toUUID()
+                    learningContentType = LearningContentType.fromString(matchingInfo.learningContentType)
+                    numberOfCorrect?.let { this.numberOfCorrect = it }
+                    numberOfIncorrect?.let { this.numberOfIncorrect = it}
+                }
+            }
+        }
+
+        val correctMatchingEntities : List<MatchingLearning> = createMatchingLearningEntities(correctMatchingInfoList, numberOfCorrect = 1)
+        val incorrectMatchingEntities : List<MatchingLearning> = createMatchingLearningEntities(incorrectMatchingInfoList, numberOfIncorrect = 1)
+
+        val matchingLearningEntities = correctMatchingEntities + incorrectMatchingEntities
+        val itemIds = matchingLearningEntities.map { it.itemId }
+        val learningContentIds = matchingLearningEntities.map { it.learningContentId }
+        val learningContentTypes = matchingLearningEntities.map { it.learningContentType }
+
+        val existingEntitiesMap = matchingLearningRepository.findAllByItemIdInAndLearningContentIdInAndLearningContentTypeIn(
+            itemIds, learningContentIds, learningContentTypes
+        ).associateBy { Triple(it.itemId, it.learningContentId, it.learningContentType) }
+
+        val updatedMatchingEntities = matchingLearningEntities.map {
+            val key = Triple(it.itemId, it.learningContentId, it.learningContentType)
+            val existedMatchingEntity = existingEntitiesMap[key]
+
+            if (existedMatchingEntity == null) {
+                it
+            } else {
+                existedMatchingEntity.numberOfCorrect += it.numberOfCorrect
+                existedMatchingEntity.numberOfIncorrect += it.numberOfIncorrect
+                existedMatchingEntity
+            }
+        }
+
+        return matchingLearningRepository.saveAll(updatedMatchingEntities)
+    }
+}
