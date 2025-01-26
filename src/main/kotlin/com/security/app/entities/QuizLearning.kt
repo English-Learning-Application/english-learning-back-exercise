@@ -38,6 +38,9 @@ class QuizLearning {
     @Column(nullable = false)
     var numberOfIncorrect: Int = 0
 
+    @Column(nullable = true)
+    var userId: UUID? = null
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     var createdAt: LocalDateTime = LocalDateTime.now()

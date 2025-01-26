@@ -1,9 +1,11 @@
 package com.security.app.services
 
 import com.security.app.entities.MatchingLearning
+import com.security.app.entities.PronunciationLearning
 import com.security.app.model.LearningContentType
 import com.security.app.repositories.MatchingLearningRepository
 import com.security.app.request.MatchingLearningInfo
+import com.security.app.utils.JwtTokenUtils
 import com.security.app.utils.toUUID
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service
 class MatchingLearningService(
     private val matchingLearningRepository: MatchingLearningRepository,
     private val learningContentService: LearningContentService,
+    private val jwtTokenUtils: JwtTokenUtils
 ) {
     @Transactional
     fun updateMatchingLearning(
@@ -26,6 +29,8 @@ class MatchingLearningService(
         if(extractedLearningContentIds.size != learningContentResponse?.size) {
             return null
         }
+
+        val userId = jwtTokenUtils.getUserId(tokenString) ?: return null
 
         fun createMatchingLearningEntities(
             matchingLearningInfoList: List<MatchingLearningInfo>,
@@ -51,8 +56,8 @@ class MatchingLearningService(
         val learningContentIds = matchingLearningEntities.map { it.learningContentId }
         val learningContentTypes = matchingLearningEntities.map { it.learningContentType }
 
-        val existingEntitiesMap = matchingLearningRepository.findAllByItemIdInAndLearningContentIdInAndLearningContentTypeIn(
-            itemIds, learningContentIds, learningContentTypes
+        val existingEntitiesMap = matchingLearningRepository.findAllByItemIdInAndLearningContentIdInAndLearningContentTypeInAndUserId(
+            itemIds, learningContentIds, learningContentTypes, userId.toUUID()
         ).associateBy { Triple(it.itemId, it.learningContentId, it.learningContentType) }
 
         val updatedMatchingEntities = matchingLearningEntities.map {
@@ -60,6 +65,7 @@ class MatchingLearningService(
             val existedMatchingEntity = existingEntitiesMap[key]
 
             if (existedMatchingEntity == null) {
+                it.userId = userId.toUUID()
                 it
             } else {
                 existedMatchingEntity.numberOfCorrect += it.numberOfCorrect
@@ -70,4 +76,11 @@ class MatchingLearningService(
 
         return matchingLearningRepository.saveAll(updatedMatchingEntities)
     }
+
+    fun getProgress(tokenString: String): List<MatchingLearning> {
+        val userId = jwtTokenUtils.getUserId(tokenString) ?: return emptyList()
+
+        return matchingLearningRepository.findAllByUserId(userId.toUUID())
+    }
+
 }

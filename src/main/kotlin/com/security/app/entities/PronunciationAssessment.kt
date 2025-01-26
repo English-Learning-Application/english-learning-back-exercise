@@ -26,16 +26,16 @@ class PronunciationAssessment {
     @JoinColumn(name = "pronunciationLearningId")
     lateinit var pronunciationLearning: PronunciationLearning
 
-    @Column(nullable = true)
+    @Column(nullable = true, length = 1024)
     var pronunciationWord: String = ""
 
     @Column(nullable = true)
     var score: Int = 0
 
-    @Column(nullable = true)
+    @Column(nullable = true, length = 1024)
     var pronunciationAccentPrediction: String = ""
 
-    @Column(nullable = true)
+    @Column(nullable = true, length = 1024)
     var scoreCertificateEstimation: String = ""
 
     @CreatedDate

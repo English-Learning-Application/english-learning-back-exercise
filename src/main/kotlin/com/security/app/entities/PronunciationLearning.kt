@@ -35,6 +35,9 @@ class PronunciationLearning {
     @OneToMany(mappedBy = "pronunciationLearning", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
     var pronunciationLearningContents: List<PronunciationAssessment> = mutableListOf()
 
+    @Column(nullable = true)
+    var userId: UUID? = null
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     var createdAt: LocalDateTime = LocalDateTime.now()

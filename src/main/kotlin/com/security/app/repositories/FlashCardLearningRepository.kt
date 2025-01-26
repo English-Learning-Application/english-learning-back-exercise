@@ -12,9 +12,12 @@ interface FlashCardLearningRepository : JpaRepository<FlashCardLearning, UUID> {
         learningContentType: LearningContentType
     ) : FlashCardLearning?
 
-    fun findAllByItemIdInAndLearningContentIdInAndLearningContentTypeIn(
+    fun findAllByItemIdInAndLearningContentIdInAndLearningContentTypeInAndUserId(
         itemIds: List<UUID>,
         learningContentIds: List<UUID>,
-        learningContentTypes: List<LearningContentType>
+        learningContentTypes: List<LearningContentType>,
+        userId: UUID
     ): List<FlashCardLearning>
+
+    fun findAllByUserId(userId: UUID): List<FlashCardLearning>
 }

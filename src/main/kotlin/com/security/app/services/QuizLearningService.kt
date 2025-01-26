@@ -4,6 +4,7 @@ import com.security.app.entities.QuizLearning
 import com.security.app.model.LearningContentType
 import com.security.app.repositories.QuizLearningRepository
 import com.security.app.request.QuestionLearningInfo
+import com.security.app.utils.JwtTokenUtils
 import com.security.app.utils.toUUID
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
@@ -11,7 +12,8 @@ import org.springframework.stereotype.Service
 @Service
 class QuizLearningService(
     private val quizLearningRepository: QuizLearningRepository,
-    private val learningContentService: LearningContentService
+    private val learningContentService: LearningContentService,
+    private val jwtTokenUtils: JwtTokenUtils
 ) {
     @Transactional
     fun updateQuizLearning(
@@ -26,6 +28,8 @@ class QuizLearningService(
         if(extractedLearningContentIds.size != learningContentResponse?.size) {
             return null
         }
+
+        val userId = jwtTokenUtils.getUserId(tokenString) ?: return null
 
         fun createQuizLearningEntities(
             quizLearningInfoList: List<QuestionLearningInfo>,
@@ -51,8 +55,8 @@ class QuizLearningService(
         val learningContentIds = quizLearningEntities.map { it.learningContentId }
         val learningContentTypes = quizLearningEntities.map { it.learningContentType }
 
-        val existingEntitiesMap = quizLearningRepository.findAllByItemIdInAndLearningContentIdInAndLearningContentTypeIn(
-            itemIds, learningContentIds, learningContentTypes
+        val existingEntitiesMap = quizLearningRepository.findAllByItemIdInAndLearningContentIdInAndLearningContentTypeInAndUserId(
+            itemIds, learningContentIds, learningContentTypes, userId.toUUID()
         ).associateBy { Triple(it.itemId, it.learningContentId, it.learningContentType) }
 
         val updatedQuizEntities = quizLearningEntities.map {
@@ -60,6 +64,7 @@ class QuizLearningService(
             val existedQuizEntity = existingEntitiesMap[key]
 
             if (existedQuizEntity == null) {
+                it.userId = userId.toUUID()
                 it
             } else {
                 existedQuizEntity.numberOfCorrect += it.numberOfCorrect
@@ -69,5 +74,11 @@ class QuizLearningService(
         }
 
         return quizLearningRepository.saveAll(updatedQuizEntities)
+    }
+
+    fun getProgress(tokenString: String): List<QuizLearning> {
+        val userId = jwtTokenUtils.getUserId(tokenString) ?: return emptyList()
+
+        return quizLearningRepository.findAllByUserId(userId.toUUID())
     }
 }

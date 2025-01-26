@@ -4,6 +4,7 @@ import com.security.app.entities.FlashCardLearning
 import com.security.app.model.LearningContentType
 import com.security.app.repositories.FlashCardLearningRepository
 import com.security.app.request.FlashCardLearningInfo
+import com.security.app.utils.JwtTokenUtils
 import com.security.app.utils.toUUID
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
@@ -11,7 +12,8 @@ import org.springframework.stereotype.Service
 @Service
 class FlashCardLearningService (
     private val flashCardLearningRepository: FlashCardLearningRepository,
-    private val learningContentService: LearningContentService
+    private val learningContentService: LearningContentService,
+    private val jwtTokenUtils: JwtTokenUtils
 ){
     @Transactional
     fun updateFlashCardLearning(
@@ -27,6 +29,7 @@ class FlashCardLearningService (
             return null
         }
 
+        val userId = jwtTokenUtils.getUserId(tokenString) ?: return null
 
         fun createFlashCardLearningEntities(
             flashcardList: List<FlashCardLearningInfo>,
@@ -52,8 +55,8 @@ class FlashCardLearningService (
         val learningContentIds = flashCardLearningEntities.map { it.learningContentId }
         val learningContentTypes = flashCardLearningEntities.map { it.learningContentType }
 
-        val existingEntitiesMap = flashCardLearningRepository.findAllByItemIdInAndLearningContentIdInAndLearningContentTypeIn(
-            itemIds, learningContentIds, learningContentTypes
+        val existingEntitiesMap = flashCardLearningRepository.findAllByItemIdInAndLearningContentIdInAndLearningContentTypeInAndUserId(
+            itemIds, learningContentIds, learningContentTypes, userId.toUUID()
         ).associateBy { Triple(it.itemId, it.learningContentId, it.learningContentType) }
 
         val updatedFlashCardEntities = flashCardLearningEntities.map {
@@ -61,6 +64,7 @@ class FlashCardLearningService (
             val existedFlashCardLearning = existingEntitiesMap[key]
 
             if (existedFlashCardLearning == null) {
+                it.userId = userId.toUUID()
                 it
             } else {
                 existedFlashCardLearning.numberOfLearned += it.numberOfLearned
@@ -70,5 +74,11 @@ class FlashCardLearningService (
         }
 
         return flashCardLearningRepository.saveAll(updatedFlashCardEntities)
+    }
+
+    fun getProgress(tokenString: String, ): List<FlashCardLearning> {
+        val userId = jwtTokenUtils.getUserId(tokenString) ?: return emptyList()
+
+        return flashCardLearningRepository.findAllByUserId(userId.toUUID())
     }
 }
