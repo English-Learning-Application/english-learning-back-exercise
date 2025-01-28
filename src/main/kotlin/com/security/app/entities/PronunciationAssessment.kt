@@ -1,5 +1,6 @@
 package com.security.app.entities
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 import lombok.*
 import org.springframework.data.annotation.CreatedDate
@@ -24,18 +25,19 @@ class PronunciationAssessment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pronunciationLearningId")
+    @JsonIgnore
     lateinit var pronunciationLearning: PronunciationLearning
 
-    @Column(nullable = true, length = 1024)
+    @Column(nullable = true, columnDefinition = "TEXT")
     var pronunciationWord: String = ""
 
     @Column(nullable = true)
     var score: Int = 0
 
-    @Column(nullable = true, length = 1024)
+    @Column(nullable = true, columnDefinition = "TEXT")
     var pronunciationAccentPrediction: String = ""
 
-    @Column(nullable = true, length = 1024)
+    @Column(nullable = true, columnDefinition = "TEXT")
     var scoreCertificateEstimation: String = ""
 
     @CreatedDate

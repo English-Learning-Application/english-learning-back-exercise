@@ -61,17 +61,16 @@ class PronunciationLearningService(
 
         val userId = jwtTokenUtils.getUserId(tokenString) ?: return null
 
+        val pronunciationLearningEntities : List<PronunciationLearning> = pronunciationLearningUpdateInfo.map { updateInfo ->
+            val pronunciationLearning = PronunciationLearning().let {
+                it.learningContentId = updateInfo.learningContentId.toUUID()
+                it.itemId = updateInfo.itemId.toUUID()
+                it.userId = userId.toUUID()
+                it.learningContentType = LearningContentType.valueOf(updateInfo.learningContentType)
+                it
+            }
 
-        val pronunciationLearningEntities : List<PronunciationLearning> = pronunciationLearningUpdateInfo.flatMap { updateInfo ->
-            updateInfo.pronunciationAssessmentInfo.map { pronunciationAssessmentLearningInfo ->
-                val pronunciationLearning = PronunciationLearning().let {
-                    it.learningContentId = updateInfo.learningContentId.toUUID()
-                    it.itemId = updateInfo.itemId.toUUID()
-                    it.userId = userId.toUUID()
-                    it.learningContentType = LearningContentType.valueOf(updateInfo.learningContentType)
-                    it
-                }
-
+            val assessmentInfo = updateInfo.pronunciationAssessmentInfo.map { pronunciationAssessmentLearningInfo ->
                 val pronunciationAssessment = PronunciationAssessment().let {
                     it.pronunciationWord = pronunciationAssessmentLearningInfo.pronunciationWord
                     it.score = pronunciationAssessmentLearningInfo.score
@@ -80,10 +79,11 @@ class PronunciationLearningService(
                     it.scoreCertificateEstimation = pronunciationAssessmentLearningInfo.scoreCertificateEstimation
                     it
                 }
-
-                pronunciationLearning.pronunciationLearningContents = listOf(pronunciationAssessment)
-                pronunciationLearning
+                pronunciationAssessment
             }
+
+            pronunciationLearning.pronunciationLearningContents = assessmentInfo
+            pronunciationLearning
         }
 
         val itemIds = pronunciationLearningEntities.map { it.itemId }
@@ -102,8 +102,8 @@ class PronunciationLearningService(
                 it.userId = userId.toUUID()
                 it
             } else {
-                val copiedExistedPronunciationAssessment = existedPronunciationLearning.pronunciationLearningContents.toMutableList()
-                existedPronunciationLearning.pronunciationLearningContents = (copiedExistedPronunciationAssessment + it.pronunciationLearningContents)
+                it.pronunciationLearningContents.forEach { it.pronunciationLearning = existedPronunciationLearning }
+                existedPronunciationLearning.pronunciationLearningContents += it.pronunciationLearningContents
                 existedPronunciationLearning
             }
         }
