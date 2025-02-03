@@ -19,7 +19,8 @@ class FlashCardLearningService (
     fun updateFlashCardLearning(
         tokenString: String,
         learnedFlashcardList: List<FlashCardLearningInfo>,
-        skippedFlashcardList: List<FlashCardLearningInfo>
+        skippedFlashcardList: List<FlashCardLearningInfo>,
+        courseId: String
     ) : List<FlashCardLearning>? {
         val extractedLearningContentIds = (learnedFlashcardList + skippedFlashcardList).map { it.learningContentId }.distinct()
         val learningContentResponse =
@@ -43,6 +44,7 @@ class FlashCardLearningService (
                     learningContentType = LearningContentType.fromString(flashcard.learningContentType)
                     numberOfLearned?.let { this.numberOfLearned = it }
                     numberOfSkipped?.let { this.numberOfSkipped = it }
+                    this.courseId = courseId.toUUID()
                 }
             }
         }
@@ -55,8 +57,8 @@ class FlashCardLearningService (
         val learningContentIds = flashCardLearningEntities.map { it.learningContentId }
         val learningContentTypes = flashCardLearningEntities.map { it.learningContentType }
 
-        val existingEntitiesMap = flashCardLearningRepository.findAllByItemIdInAndLearningContentIdInAndLearningContentTypeInAndUserId(
-            itemIds, learningContentIds, learningContentTypes, userId.toUUID()
+        val existingEntitiesMap = flashCardLearningRepository.findAllByItemIdInAndLearningContentIdInAndLearningContentTypeInAndUserIdAndCourseId(
+            itemIds, learningContentIds, learningContentTypes, userId.toUUID(), courseId.toUUID()
         ).associateBy { Triple(it.itemId, it.learningContentId, it.learningContentType) }
 
         val updatedFlashCardEntities = flashCardLearningEntities.map {
@@ -76,9 +78,7 @@ class FlashCardLearningService (
         return flashCardLearningRepository.saveAll(updatedFlashCardEntities)
     }
 
-    fun getProgress(tokenString: String, ): List<FlashCardLearning> {
-        val userId = jwtTokenUtils.getUserId(tokenString) ?: return emptyList()
-
-        return flashCardLearningRepository.findAllByUserId(userId.toUUID())
+    fun getProgress(userId: String, courseIds: List<String>): List<FlashCardLearning> {
+        return flashCardLearningRepository.findAllByUserIdAndCourseIdIsIn(userId.toUUID(), courseIds.map { it.toUUID() })
     }
 }

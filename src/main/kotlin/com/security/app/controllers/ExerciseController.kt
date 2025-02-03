@@ -13,6 +13,7 @@ import com.security.app.services.PronunciationLearningService
 import com.security.app.services.QuizLearningService
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -30,7 +31,12 @@ class ExerciseController(
     ) :ResponseEntity<ListMessage<FlashCardLearningModel>> {
         try{
             val tokenString = httpServletRequest.getHeader("Authorization").removePrefix("Bearer ")
-            val list = flashCardLearningService.updateFlashCardLearning(tokenString, request.learnedFlashCardLearningInfo, request.skippedFlashCardLearningInfo)
+            val list = flashCardLearningService.updateFlashCardLearning(
+                tokenString,
+                request.learnedFlashCardLearningInfo,
+                request.skippedFlashCardLearningInfo,
+                request.courseId
+            )
                 ?: return ResponseEntity.badRequest().body(ListMessage.BadRequest("Content not found"))
 
             val modelList = list.map { FlashCardLearningModel.fromEntity(it) }
@@ -49,7 +55,12 @@ class ExerciseController(
     ) :ResponseEntity<ListMessage<MatchingLearningModel>> {
         try{
             val tokenString = httpServletRequest.getHeader("Authorization").removePrefix("Bearer ")
-            val list = matchingLearningService.updateMatchingLearning(tokenString, request.correctMatchingLearningInfo, request.incorrectMatchingLearningInfo)
+            val list = matchingLearningService.updateMatchingLearning(
+                tokenString,
+                request.correctMatchingLearningInfo,
+                request.incorrectMatchingLearningInfo,
+                request.courseId
+            )
                 ?: return ResponseEntity.badRequest().body(ListMessage.BadRequest("Content not found"))
 
             val modelList = list.map { MatchingLearningModel.fromEntity(it) }
@@ -68,7 +79,12 @@ class ExerciseController(
     ) :ResponseEntity<ListMessage<QuizLearningModel>> {
         try{
             val tokenString = httpServletRequest.getHeader("Authorization").removePrefix("Bearer ")
-            val list = quizLearningService.updateQuizLearning(tokenString, request.correctQuestionLearningInfo, request.incorrectQuestionLearningInfo)
+            val list = quizLearningService.updateQuizLearning(
+                tokenString,
+                request.correctQuestionLearningInfo,
+                request.incorrectQuestionLearningInfo,
+                request.courseId
+            )
                 ?: return ResponseEntity.badRequest().body(ListMessage.BadRequest("Content not found"))
 
             val modelList = list.map { QuizLearningModel.fromEntity(it) }
@@ -106,7 +122,7 @@ class ExerciseController(
     ) :ResponseEntity<ListMessage<PronunciationLearningModel>> {
         try{
             val tokenString = httpServletRequest.getHeader("Authorization").removePrefix("Bearer ")
-            val list = pronunciationLearningService.updatePronunciationLearning(tokenString, request.pronunciationLearningUpdateInfo)
+            val list = pronunciationLearningService.updatePronunciationLearning(tokenString, request.pronunciationLearningUpdateInfo, request.courseId)
                 ?: return ResponseEntity.badRequest().body(ListMessage.BadRequest("Content not found"))
 
             val modelList = list.map { PronunciationLearningModel.fromEntity(it) }
@@ -121,13 +137,15 @@ class ExerciseController(
     @GetMapping("/progress")
     fun getProgress(
         httpServletRequest: HttpServletRequest,
+        @RequestParam("courseIds", required = true) courseIds: List<String>
     ) :ResponseEntity<Message<ProgressModel>> {
+        val auth = SecurityContextHolder.getContext().authentication
+        val userId = auth.name
         try{
-            val tokenString = httpServletRequest.getHeader("Authorization").removePrefix("Bearer ")
-            val flashCardProgress = flashCardLearningService.getProgress(tokenString)
-            val quizProgress = quizLearningService.getProgress(tokenString)
-            val pronunciationProgress = pronunciationLearningService.getProgress(tokenString)
-            val matchingProgress = matchingLearningService.getProgress(tokenString)
+            val flashCardProgress = flashCardLearningService.getProgress(userId, courseIds)
+            val quizProgress = quizLearningService.getProgress(userId, courseIds)
+            val pronunciationProgress = pronunciationLearningService.getProgress(userId, courseIds)
+            val matchingProgress = matchingLearningService.getProgress(userId, courseIds)
 
             val progressModel = ProgressModel(
                 flashCardProgress = flashCardProgress.map { FlashCardLearningModel.fromEntity(it) },

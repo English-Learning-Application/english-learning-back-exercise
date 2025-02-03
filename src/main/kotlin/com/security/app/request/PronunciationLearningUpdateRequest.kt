@@ -2,6 +2,7 @@ package com.security.app.request
 
 data class PronunciationLearningUpdateRequest(
     val pronunciationLearningUpdateInfo: List<PronunciationLearningUpdateInfo>,
+    val courseId: String
 )
 
 data class PronunciationLearningUpdateInfo(

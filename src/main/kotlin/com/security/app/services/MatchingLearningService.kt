@@ -20,7 +20,8 @@ class MatchingLearningService(
     fun updateMatchingLearning(
         tokenString: String,
         correctMatchingInfoList : List<MatchingLearningInfo>,
-        incorrectMatchingInfoList: List<MatchingLearningInfo>
+        incorrectMatchingInfoList: List<MatchingLearningInfo>,
+        courseId: String
     ) : List<MatchingLearning>? {
         val extractedLearningContentIds = (correctMatchingInfoList + incorrectMatchingInfoList).map { it.learningContentId }.distinct()
         val learningContentResponse =
@@ -44,6 +45,7 @@ class MatchingLearningService(
                     learningContentType = LearningContentType.fromString(matchingInfo.learningContentType)
                     numberOfCorrect?.let { this.numberOfCorrect = it }
                     numberOfIncorrect?.let { this.numberOfIncorrect = it}
+                    this.courseId = courseId.toUUID()
                 }
             }
         }
@@ -56,8 +58,8 @@ class MatchingLearningService(
         val learningContentIds = matchingLearningEntities.map { it.learningContentId }
         val learningContentTypes = matchingLearningEntities.map { it.learningContentType }
 
-        val existingEntitiesMap = matchingLearningRepository.findAllByItemIdInAndLearningContentIdInAndLearningContentTypeInAndUserId(
-            itemIds, learningContentIds, learningContentTypes, userId.toUUID()
+        val existingEntitiesMap = matchingLearningRepository.findAllByItemIdInAndLearningContentIdInAndLearningContentTypeInAndUserIdAndCourseId(
+            itemIds, learningContentIds, learningContentTypes, userId.toUUID(), courseId.toUUID()
         ).associateBy { Triple(it.itemId, it.learningContentId, it.learningContentType) }
 
         val updatedMatchingEntities = matchingLearningEntities.map {
@@ -77,10 +79,8 @@ class MatchingLearningService(
         return matchingLearningRepository.saveAll(updatedMatchingEntities)
     }
 
-    fun getProgress(tokenString: String): List<MatchingLearning> {
-        val userId = jwtTokenUtils.getUserId(tokenString) ?: return emptyList()
-
-        return matchingLearningRepository.findAllByUserId(userId.toUUID())
+    fun getProgress(userId: String, courseIds: List<String>): List<MatchingLearning> {
+        return matchingLearningRepository.findAllByUserIdAndCourseIdIsIn(userId.toUUID(), courseIds.map { it.toUUID() })
     }
 
 }

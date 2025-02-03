@@ -6,12 +6,16 @@ import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID
 
 interface MatchingLearningRepository : JpaRepository<MatchingLearning, UUID> {
-    fun findAllByItemIdInAndLearningContentIdInAndLearningContentTypeInAndUserId(
+    fun findAllByItemIdInAndLearningContentIdInAndLearningContentTypeInAndUserIdAndCourseId(
         itemIds: List<UUID>,
         learningContentIds: List<UUID>,
         learningContentTypes: List<LearningContentType>,
-        userId: UUID
+        userId: UUID,
+        courseId: UUID
     ): List<MatchingLearning>
 
-    fun findAllByUserId(userId: UUID): List<MatchingLearning>
+    fun findAllByUserIdAndCourseIdIsIn(
+        userId: UUID,
+        courseIds: List<UUID>
+    ): List<MatchingLearning>
 }

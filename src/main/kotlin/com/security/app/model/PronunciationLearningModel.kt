@@ -7,6 +7,7 @@ class PronunciationLearningModel(
     var pronunciationLearningId: UUID? = null,
     var learningContentId: UUID = UUID.randomUUID(),
     var itemId: UUID = UUID.randomUUID(),
+    var courseId: UUID = UUID.randomUUID(),
     var learningContentType: LearningContentType = LearningContentType.WORD,
     var pronunciationLearningContents: List<PronunciationAssessmentModel> = mutableListOf()
 ) {
@@ -16,6 +17,7 @@ class PronunciationLearningModel(
                 pronunciationLearningId = entity.pronunciationLearningId,
                 learningContentId = entity.learningContentId,
                 itemId = entity.itemId,
+                courseId = entity.courseId ?: UUID.randomUUID(),
                 learningContentType = entity.learningContentType,
                 pronunciationLearningContents = entity.pronunciationLearningContents.map { PronunciationAssessmentModel.fromEntity(it) }
             )

@@ -8,6 +8,7 @@ class MatchingLearningModel(
     var learningContentId: UUID = UUID.randomUUID(),
     var itemId: UUID = UUID.randomUUID(),
     var learningContentType: LearningContentType = LearningContentType.WORD,
+    var courseId: UUID = UUID.randomUUID(),
     var numberOfCorrect: Int = 0,
     var numberOfIncorrect: Int = 0,
 ) {
@@ -17,6 +18,7 @@ class MatchingLearningModel(
                 matchingLearningId = entity.matchingLearningId,
                 learningContentId = entity.learningContentId,
                 itemId = entity.itemId,
+                courseId = entity.courseId ?: UUID.randomUUID(),
                 learningContentType = entity.learningContentType,
                 numberOfCorrect = entity.numberOfCorrect,
                 numberOfIncorrect = entity.numberOfIncorrect,

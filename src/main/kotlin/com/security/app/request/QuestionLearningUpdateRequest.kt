@@ -3,6 +3,7 @@ package com.security.app.request
 data class QuestionLearningUpdateRequest (
     val incorrectQuestionLearningInfo: List<QuestionLearningInfo>,
     val correctQuestionLearningInfo: List<QuestionLearningInfo>,
+    val courseId: String
 )
 
 data class QuestionLearningInfo(

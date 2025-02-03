@@ -6,12 +6,16 @@ import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID
 
 interface PronunciationLearningRepository : JpaRepository<PronunciationLearning, UUID> {
-    fun findAllByItemIdInAndLearningContentIdInAndLearningContentTypeInAndUserId(
+    fun findAllByItemIdInAndLearningContentIdInAndLearningContentTypeInAndUserIdAndCourseId(
         itemIds: List<UUID>,
         learningContentIds: List<UUID>,
         learningContentTypes: List<LearningContentType>,
-        userId: UUID
+        userId: UUID,
+        courseId: UUID
     ): List<PronunciationLearning>
 
-    fun findAllByUserId(userId: UUID): List<PronunciationLearning>
+    fun findAllByUserIdAndCourseIdIsIn(
+        userId: UUID,
+        courseIds: List<UUID>
+    ): List<PronunciationLearning>
 }

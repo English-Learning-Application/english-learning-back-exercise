@@ -19,7 +19,8 @@ class QuizLearningService(
     fun updateQuizLearning(
         tokenString: String,
         correctQuizInfoList : List<QuestionLearningInfo>,
-        incorrectQuizInfoList: List<QuestionLearningInfo>
+        incorrectQuizInfoList: List<QuestionLearningInfo>,
+        courseId: String
     ) : List<QuizLearning>? {
         val extractedLearningContentIds = (correctQuizInfoList + incorrectQuizInfoList).map { it.learningContentId }.distinct()
         val learningContentResponse =
@@ -43,6 +44,7 @@ class QuizLearningService(
                     learningContentType = LearningContentType.fromString(quizInfo.learningContentType)
                     numberOfCorrect?.let { this.numberOfCorrect = it }
                     numberOfIncorrect?.let { this.numberOfIncorrect = it}
+                    this.courseId = courseId.toUUID()
                 }
             }
         }
@@ -55,8 +57,8 @@ class QuizLearningService(
         val learningContentIds = quizLearningEntities.map { it.learningContentId }
         val learningContentTypes = quizLearningEntities.map { it.learningContentType }
 
-        val existingEntitiesMap = quizLearningRepository.findAllByItemIdInAndLearningContentIdInAndLearningContentTypeInAndUserId(
-            itemIds, learningContentIds, learningContentTypes, userId.toUUID()
+        val existingEntitiesMap = quizLearningRepository.findAllByItemIdInAndLearningContentIdInAndLearningContentTypeInAndUserIdAndCourseId(
+            itemIds, learningContentIds, learningContentTypes, userId.toUUID(), courseId.toUUID()
         ).associateBy { Triple(it.itemId, it.learningContentId, it.learningContentType) }
 
         val updatedQuizEntities = quizLearningEntities.map {
@@ -76,9 +78,7 @@ class QuizLearningService(
         return quizLearningRepository.saveAll(updatedQuizEntities)
     }
 
-    fun getProgress(tokenString: String): List<QuizLearning> {
-        val userId = jwtTokenUtils.getUserId(tokenString) ?: return emptyList()
-
-        return quizLearningRepository.findAllByUserId(userId.toUUID())
+    fun getProgress(userId: String, courseIds: List<String>): List<QuizLearning> {
+        return quizLearningRepository.findAllByUserIdAndCourseIdIsIn(userId.toUUID(), courseIds.map { it.toUUID() })
     }
 }

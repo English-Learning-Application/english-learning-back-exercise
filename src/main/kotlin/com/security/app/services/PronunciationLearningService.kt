@@ -49,7 +49,8 @@ class PronunciationLearningService(
     @Transactional
     fun updatePronunciationLearning(
         tokenString: String,
-        pronunciationLearningUpdateInfo: List<PronunciationLearningUpdateInfo>
+        pronunciationLearningUpdateInfo: List<PronunciationLearningUpdateInfo>,
+        courseId: String
     ) : List<PronunciationLearning>? {
         val extractedLearningContentIds = pronunciationLearningUpdateInfo.map { it.learningContentId }.distinct()
         val learningContentResponse =
@@ -67,6 +68,7 @@ class PronunciationLearningService(
                 it.itemId = updateInfo.itemId.toUUID()
                 it.userId = userId.toUUID()
                 it.learningContentType = LearningContentType.valueOf(updateInfo.learningContentType)
+                it.courseId = courseId.toUUID()
                 it
             }
 
@@ -90,8 +92,8 @@ class PronunciationLearningService(
         val learningContentIds = pronunciationLearningEntities.map { it.learningContentId }
         val learningContentTypes = pronunciationLearningEntities.map { it.learningContentType }
 
-        val existingEntitiesMap = pronunciationLearningRepository.findAllByItemIdInAndLearningContentIdInAndLearningContentTypeInAndUserId(
-            itemIds, learningContentIds, learningContentTypes, userId.toUUID()
+        val existingEntitiesMap = pronunciationLearningRepository.findAllByItemIdInAndLearningContentIdInAndLearningContentTypeInAndUserIdAndCourseId(
+            itemIds, learningContentIds, learningContentTypes, userId.toUUID(), courseId.toUUID()
         ).associateBy { Triple(it.itemId, it.learningContentId, it.learningContentType) }
 
         val updatedPronunciationEntities = pronunciationLearningEntities.map {
@@ -111,9 +113,7 @@ class PronunciationLearningService(
         return pronunciationLearningRepository.saveAll(updatedPronunciationEntities)
     }
 
-    fun getProgress(tokenString: String): List<PronunciationLearning> {
-        val userId = jwtTokenUtils.getUserId(tokenString) ?: return emptyList()
-
-        return pronunciationLearningRepository.findAllByUserId(userId.toUUID())
+    fun getProgress(userId : String, courseIds: List<String>): List<PronunciationLearning> {
+        return pronunciationLearningRepository.findAllByUserIdAndCourseIdIsIn(userId.toUUID(), courseIds.map { it.toUUID() })
     }
 }

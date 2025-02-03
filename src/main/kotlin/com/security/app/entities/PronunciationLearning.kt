@@ -38,6 +38,9 @@ class PronunciationLearning {
     @Column(nullable = true)
     var userId: UUID? = null
 
+    @Column(nullable = true)
+    var courseId: UUID? = null
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     var createdAt: LocalDateTime = LocalDateTime.now()
