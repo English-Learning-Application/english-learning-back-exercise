@@ -24,4 +24,8 @@ interface FlashCardLearningRepository : JpaRepository<FlashCardLearning, UUID> {
         userId: UUID,
         courseIds: List<UUID>
     ): List<FlashCardLearning>
+
+    fun findAllByUserId(
+        userId: UUID
+    ): List<FlashCardLearning>
 }

@@ -18,4 +18,6 @@ interface MatchingLearningRepository : JpaRepository<MatchingLearning, UUID> {
         userId: UUID,
         courseIds: List<UUID>
     ): List<MatchingLearning>
+
+    fun findAllByUserId(userId: UUID): List<MatchingLearning>
 }

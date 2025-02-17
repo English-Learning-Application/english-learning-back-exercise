@@ -18,4 +18,6 @@ interface QuizLearningRepository : JpaRepository<QuizLearning, UUID> {
         userId: UUID,
         courseIds: List<UUID>
     ): List<QuizLearning>
+
+    fun findAllByUserId(userId: UUID): List<QuizLearning>
 }

@@ -137,11 +137,27 @@ class ExerciseController(
     @GetMapping("/progress")
     fun getProgress(
         httpServletRequest: HttpServletRequest,
-        @RequestParam("courseIds", required = true) courseIds: List<String>
+        @RequestParam("courseIds") courseIds: List<String>
     ) :ResponseEntity<Message<ProgressModel>> {
         val auth = SecurityContextHolder.getContext().authentication
         val userId = auth.name
         try{
+            if(courseIds.isEmpty()) {
+                val allFlashcardProgress = flashCardLearningService.getProgressOfUser(userId)
+                val allQuizProgress = quizLearningService.getProgressOfUser(userId)
+                val allPronunciationProgress = pronunciationLearningService.getProgressOfUser(userId)
+                val allMatchingProgress = matchingLearningService.getProgressOfUser(userId)
+
+                val progressModel = ProgressModel(
+                    flashCardProgress = allFlashcardProgress.map { FlashCardLearningModel.fromEntity(it) },
+                    quizProgress = allQuizProgress.map { QuizLearningModel.fromEntity(it) },
+                    pronunciationProgress = allPronunciationProgress.map { PronunciationLearningModel.fromEntity(it) },
+                    matchingProgress = allMatchingProgress.map { MatchingLearningModel.fromEntity(it) }
+                )
+
+                return ResponseEntity.ok(Message.Success("Progress found", progressModel))
+            }
+
             val flashCardProgress = flashCardLearningService.getProgress(userId, courseIds)
             val quizProgress = quizLearningService.getProgress(userId, courseIds)
             val pronunciationProgress = pronunciationLearningService.getProgress(userId, courseIds)

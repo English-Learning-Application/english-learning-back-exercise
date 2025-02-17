@@ -83,4 +83,7 @@ class MatchingLearningService(
         return matchingLearningRepository.findAllByUserIdAndCourseIdIsIn(userId.toUUID(), courseIds.map { it.toUUID() })
     }
 
+    fun getProgressOfUser(userId: String): List<MatchingLearning> {
+        return matchingLearningRepository.findAllByUserId(userId.toUUID())
+    }
 }

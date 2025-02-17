@@ -116,4 +116,8 @@ class PronunciationLearningService(
     fun getProgress(userId : String, courseIds: List<String>): List<PronunciationLearning> {
         return pronunciationLearningRepository.findAllByUserIdAndCourseIdIsIn(userId.toUUID(), courseIds.map { it.toUUID() })
     }
+
+    fun getProgressOfUser(userId: String): List<PronunciationLearning> {
+        return pronunciationLearningRepository.findAllByUserId(userId.toUUID())
+    }
 }

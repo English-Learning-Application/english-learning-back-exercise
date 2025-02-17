@@ -81,4 +81,8 @@ class QuizLearningService(
     fun getProgress(userId: String, courseIds: List<String>): List<QuizLearning> {
         return quizLearningRepository.findAllByUserIdAndCourseIdIsIn(userId.toUUID(), courseIds.map { it.toUUID() })
     }
+
+    fun getProgressOfUser(userId: String): List<QuizLearning> {
+        return quizLearningRepository.findAllByUserId(userId.toUUID())
+    }
 }

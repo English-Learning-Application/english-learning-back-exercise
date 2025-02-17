@@ -18,4 +18,6 @@ interface PronunciationLearningRepository : JpaRepository<PronunciationLearning,
         userId: UUID,
         courseIds: List<UUID>
     ): List<PronunciationLearning>
+
+    fun findAllByUserId(userId: UUID): List<PronunciationLearning>
 }

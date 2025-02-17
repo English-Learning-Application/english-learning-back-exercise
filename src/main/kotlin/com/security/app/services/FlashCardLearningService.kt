@@ -81,4 +81,8 @@ class FlashCardLearningService (
     fun getProgress(userId: String, courseIds: List<String>): List<FlashCardLearning> {
         return flashCardLearningRepository.findAllByUserIdAndCourseIdIsIn(userId.toUUID(), courseIds.map { it.toUUID() })
     }
+
+    fun getProgressOfUser(userId: String): List<FlashCardLearning> {
+        return flashCardLearningRepository.findAllByUserId(userId.toUUID())
+    }
 }
