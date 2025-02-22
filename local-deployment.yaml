@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exercise-service-deployment
+  labels:
+    app: exercise-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: exercise-service
+  template:
+    metadata:
+      labels:
+        app: exercise-service
+    spec:
+      containers:
+        - name: exercise-service-container
+          imagePullPolicy: Never
+          image: "exercise-microservice:latest"
+          ports:
+            - containerPort: 8083
+          env:
+            - name: APP_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: exercise-service-secret
+                  key: APP_PORT
+            - name: MODE
+              valueFrom:
+                secretKeyRef:
+                  name: exercise-service-secret
+                  key: MODE
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: exercise-service-secret
+                  key: JWT_SECRET
+            - name: JWT_ISSUER
+              valueFrom:
+                secretKeyRef:
+                  name: exercise-service-secret
+                  key: SECRET_ISSUER
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: exercise-service-secret
+                  key: DB_HOST
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: exercise-service-secret
+                  key: DB_NAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: exercise-service-secret
+                  key: DB_PASSWORD
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: exercise-service-secret
+                  key: DB_USER
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: exercise-service-secret
+                  key: DB_PORT
+            - name: PROFILE_SERVICE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: exercise-service-secret
+                  key: PROFILE_SERVICE_URL
+            - name: COURSE_SERVICE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: exercise-service-secret
+                  key: COURSE_SERVICE_URL
+            - name: PRONUNCIATION_ASSESSMENT_URL
+              valueFrom:
+                secretKeyRef:
+                  name: exercise-service-secret
+                  key: PRONUNCIATION_ASSESSMENT_URL
+            - name: PRONUNCIATION_ASSESSMENT_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: exercise-service-secret
+                  key: PRONUNCIATION_ASSESSMENT_API_KEY
+            - name: PRONUNCIATION_ASSESSMENT_API_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: exercise-service-secret
+                  key: PRONUNCIATION_ASSESSMENT_API_HOST
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "512m"
+            limits:
+              memory: "512Mi"
+              cpu: "1"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: exercise-cluster-ip-service
+spec:
+  selector:
+    app: exercise-service
+  ports:
+    - protocol: TCP
+      port: 8083
+      targetPort: 8083
+  type: LoadBalancer
