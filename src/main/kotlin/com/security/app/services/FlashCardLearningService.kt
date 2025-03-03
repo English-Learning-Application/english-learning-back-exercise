@@ -77,10 +77,12 @@ class FlashCardLearningService (
             }
         }
 
-        val separatedCourseIds = updatedFlashCardEntities.map { it.courseId }.distinct()
-        achievementUpdateService.updateAchievements(userId, "FLASHCARD", separatedCourseIds.size, AchievementProgressType.ADD.value)
+        val savedFlashcardsLearning = flashCardLearningRepository.saveAll(updatedFlashCardEntities)
+        val allUserFlashCardLearningEntities = flashCardLearningRepository.findAllByUserId(userId.toUUID())
+        val separatedCourseIds = allUserFlashCardLearningEntities.map { it.courseId }.distinct()
+        achievementUpdateService.updateAchievements(userId, "FLASHCARD", separatedCourseIds.size, AchievementProgressType.UPDATE.value)
 
-        return flashCardLearningRepository.saveAll(updatedFlashCardEntities)
+        return savedFlashcardsLearning
     }
 
     fun getProgress(userId: String, courseIds: List<String>): List<FlashCardLearning> {

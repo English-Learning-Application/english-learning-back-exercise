@@ -78,10 +78,13 @@ class MatchingLearningService(
             }
         }
 
-        val separatedCourseIds = updatedMatchingEntities.map { it.courseId }.distinct()
-        achievementUpdateService.updateAchievements(userId, "MATCHING", separatedCourseIds.size, AchievementProgressType.ADD.value)
 
-        return matchingLearningRepository.saveAll(updatedMatchingEntities)
+        val savedMatchingLearnings = matchingLearningRepository.saveAll(updatedMatchingEntities)
+
+        val allMatchingEntities = matchingLearningRepository.findAllByUserId(userId.toUUID())
+        val separatedCourseIds = allMatchingEntities.map { it.courseId }.distinct()
+        achievementUpdateService.updateAchievements(userId, "MATCHING", separatedCourseIds.size, AchievementProgressType.UPDATE.value)
+        return savedMatchingLearnings
     }
 
     fun getProgress(userId: String, courseIds: List<String>): List<MatchingLearning> {

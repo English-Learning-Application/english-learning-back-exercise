@@ -112,10 +112,12 @@ class PronunciationLearningService(
             }
         }
 
-        val separatedCourseIds = updatedPronunciationEntities.map { it.courseId }.distinct()
-        achievementUpdateService.updateAchievements(userId, "PRONUNCIATION", separatedCourseIds.size, AchievementProgressType.ADD.value)
+        val savedPronunciationLearnings = pronunciationLearningRepository.saveAll(updatedPronunciationEntities)
 
-        return pronunciationLearningRepository.saveAll(updatedPronunciationEntities)
+        val allPronunciationLearning = pronunciationLearningRepository.findAllByUserId(userId.toUUID())
+        val separatedCourseIds = allPronunciationLearning.map { it.courseId }.distinct()
+        achievementUpdateService.updateAchievements(userId, "PRONUNCIATION", separatedCourseIds.size, AchievementProgressType.UPDATE.value)
+        return savedPronunciationLearnings
     }
 
     fun getProgress(userId : String, courseIds: List<String>): List<PronunciationLearning> {

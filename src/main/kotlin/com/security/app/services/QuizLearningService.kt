@@ -77,10 +77,13 @@ class QuizLearningService(
             }
         }
 
-        val separatedCourseIds = updatedQuizEntities.map { it.courseId }.distinct()
-        achievementUpdateService.updateAchievements(userId, "QUIZ", separatedCourseIds.size, AchievementProgressType.ADD.value)
+        val savedQuizLearnings = quizLearningRepository.saveAll(updatedQuizEntities)
 
-        return quizLearningRepository.saveAll(updatedQuizEntities)
+        val allQuizEntities = quizLearningRepository.findAllByUserId(userId.toUUID())
+        val separatedCourseIds = allQuizEntities.map { it.courseId }.distinct()
+        achievementUpdateService.updateAchievements(userId, "QUIZ", separatedCourseIds.size, AchievementProgressType.UPDATE.value)
+
+        return savedQuizLearnings
     }
 
     fun getProgress(userId: String, courseIds: List<String>): List<QuizLearning> {
