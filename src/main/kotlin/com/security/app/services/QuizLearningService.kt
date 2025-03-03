@@ -77,7 +77,8 @@ class QuizLearningService(
             }
         }
 
-        achievementUpdateService.updateAchievements(userId, "QUIZ", correctQuizInfoList.size, AchievementProgressType.UPDATE.value)
+        val separatedCourseIds = updatedQuizEntities.map { it.courseId }.distinct()
+        achievementUpdateService.updateAchievements(userId, "QUIZ", separatedCourseIds.size, AchievementProgressType.ADD.value)
 
         return quizLearningRepository.saveAll(updatedQuizEntities)
     }

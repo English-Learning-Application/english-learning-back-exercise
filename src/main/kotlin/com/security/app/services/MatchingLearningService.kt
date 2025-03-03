@@ -78,7 +78,8 @@ class MatchingLearningService(
             }
         }
 
-        achievementUpdateService.updateAchievements(userId, "MATCHING", correctMatchingInfoList.size, AchievementProgressType.UPDATE.value)
+        val separatedCourseIds = updatedMatchingEntities.map { it.courseId }.distinct()
+        achievementUpdateService.updateAchievements(userId, "MATCHING", separatedCourseIds.size, AchievementProgressType.ADD.value)
 
         return matchingLearningRepository.saveAll(updatedMatchingEntities)
     }

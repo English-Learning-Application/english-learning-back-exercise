@@ -112,7 +112,8 @@ class PronunciationLearningService(
             }
         }
 
-        achievementUpdateService.updateAchievements(userId, "PRONUNCIATION", pronunciationLearningUpdateInfo.size, AchievementProgressType.UPDATE.value)
+        val separatedCourseIds = updatedPronunciationEntities.map { it.courseId }.distinct()
+        achievementUpdateService.updateAchievements(userId, "PRONUNCIATION", separatedCourseIds.size, AchievementProgressType.ADD.value)
 
         return pronunciationLearningRepository.saveAll(updatedPronunciationEntities)
     }

@@ -77,7 +77,8 @@ class FlashCardLearningService (
             }
         }
 
-        achievementUpdateService.updateAchievements(userId, "FLASHCARD", learnedFlashcardList.size, AchievementProgressType.UPDATE.value)
+        val separatedCourseIds = updatedFlashCardEntities.map { it.courseId }.distinct()
+        achievementUpdateService.updateAchievements(userId, "FLASHCARD", separatedCourseIds.size, AchievementProgressType.ADD.value)
 
         return flashCardLearningRepository.saveAll(updatedFlashCardEntities)
     }
