@@ -1,6 +1,7 @@
 package com.security.app.services
 
 import com.security.app.entities.FlashCardLearning
+import com.security.app.model.AchievementProgressType
 import com.security.app.model.LearningContentType
 import com.security.app.repositories.FlashCardLearningRepository
 import com.security.app.request.FlashCardLearningInfo
@@ -13,7 +14,8 @@ import org.springframework.stereotype.Service
 class FlashCardLearningService (
     private val flashCardLearningRepository: FlashCardLearningRepository,
     private val learningContentService: LearningContentService,
-    private val jwtTokenUtils: JwtTokenUtils
+    private val jwtTokenUtils: JwtTokenUtils,
+    private val achievementUpdateService: AchievementUpdateService
 ){
     @Transactional
     fun updateFlashCardLearning(
@@ -74,6 +76,8 @@ class FlashCardLearningService (
                 existedFlashCardLearning
             }
         }
+
+        achievementUpdateService.updateAchievements(userId, "FLASHCARD", learnedFlashcardList.size, AchievementProgressType.UPDATE.value)
 
         return flashCardLearningRepository.saveAll(updatedFlashCardEntities)
     }

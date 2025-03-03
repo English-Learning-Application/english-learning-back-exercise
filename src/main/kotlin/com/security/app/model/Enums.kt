@@ -24,3 +24,18 @@ enum class LearningContentType(val value: String) {
         }
     }
 }
+
+enum class AchievementProgressType(val value: String) {
+    ADD("ADD"),
+    UPDATE("UPDATE");
+
+    companion object {
+        fun fromValue(value: String): AchievementProgressType {
+            return when (value) {
+                "ADD" -> ADD
+                "UPDATE" -> UPDATE
+                else -> throw IllegalArgumentException()
+            }
+        }
+    }
+}

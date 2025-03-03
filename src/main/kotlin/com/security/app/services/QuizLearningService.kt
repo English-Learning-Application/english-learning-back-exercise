@@ -1,6 +1,7 @@
 package com.security.app.services
 
 import com.security.app.entities.QuizLearning
+import com.security.app.model.AchievementProgressType
 import com.security.app.model.LearningContentType
 import com.security.app.repositories.QuizLearningRepository
 import com.security.app.request.QuestionLearningInfo
@@ -13,7 +14,8 @@ import org.springframework.stereotype.Service
 class QuizLearningService(
     private val quizLearningRepository: QuizLearningRepository,
     private val learningContentService: LearningContentService,
-    private val jwtTokenUtils: JwtTokenUtils
+    private val jwtTokenUtils: JwtTokenUtils,
+    private val achievementUpdateService: AchievementUpdateService
 ) {
     @Transactional
     fun updateQuizLearning(
@@ -74,6 +76,8 @@ class QuizLearningService(
                 existedQuizEntity
             }
         }
+
+        achievementUpdateService.updateAchievements(userId, "QUIZ", correctQuizInfoList.size, AchievementProgressType.UPDATE.value)
 
         return quizLearningRepository.saveAll(updatedQuizEntities)
     }

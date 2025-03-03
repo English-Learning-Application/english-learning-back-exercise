@@ -2,6 +2,7 @@ package com.security.app.services
 
 import com.security.app.entities.PronunciationAssessment
 import com.security.app.entities.PronunciationLearning
+import com.security.app.model.AchievementProgressType
 import com.security.app.model.LearningContentType
 import com.security.app.repositories.PronunciationAssessmentRepository
 import com.security.app.repositories.PronunciationLearningRepository
@@ -20,6 +21,7 @@ class PronunciationLearningService(
     private val learningContentService: LearningContentService,
     private val jwtTokenUtils: JwtTokenUtils,
     private val webClient: WebClient,
+    private val achievementUpdateService: AchievementUpdateService
 ) {
     private final val PRONUNCIATION_ASSESSMENT_URL = System.getenv("PRONUNCIATION_ASSESSMENT_URL")
     private final val PRONUNCIATION_ASSESSMENT_API_KEY = System.getenv("PRONUNCIATION_ASSESSMENT_API_KEY")
@@ -109,6 +111,8 @@ class PronunciationLearningService(
                 existedPronunciationLearning
             }
         }
+
+        achievementUpdateService.updateAchievements(userId, "PRONUNCIATION", pronunciationLearningUpdateInfo.size, AchievementProgressType.UPDATE.value)
 
         return pronunciationLearningRepository.saveAll(updatedPronunciationEntities)
     }

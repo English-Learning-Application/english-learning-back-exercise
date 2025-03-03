@@ -2,6 +2,7 @@ package com.security.app.services
 
 import com.security.app.entities.MatchingLearning
 import com.security.app.entities.PronunciationLearning
+import com.security.app.model.AchievementProgressType
 import com.security.app.model.LearningContentType
 import com.security.app.repositories.MatchingLearningRepository
 import com.security.app.request.MatchingLearningInfo
@@ -14,7 +15,8 @@ import org.springframework.stereotype.Service
 class MatchingLearningService(
     private val matchingLearningRepository: MatchingLearningRepository,
     private val learningContentService: LearningContentService,
-    private val jwtTokenUtils: JwtTokenUtils
+    private val jwtTokenUtils: JwtTokenUtils,
+    private val achievementUpdateService: AchievementUpdateService
 ) {
     @Transactional
     fun updateMatchingLearning(
@@ -75,6 +77,8 @@ class MatchingLearningService(
                 existedMatchingEntity
             }
         }
+
+        achievementUpdateService.updateAchievements(userId, "MATCHING", correctMatchingInfoList.size, AchievementProgressType.UPDATE.value)
 
         return matchingLearningRepository.saveAll(updatedMatchingEntities)
     }
